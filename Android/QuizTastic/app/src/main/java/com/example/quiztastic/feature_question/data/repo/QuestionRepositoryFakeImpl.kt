@@ -48,8 +48,12 @@ class QuestionRepositoryFakeImpl(
             questions.add(questionWithId)
             currentId++
         } else {
-            deleteQuestion(question)
-            questions.add(question)
+            for (q in questions) {
+                if (question.id == q.id) {
+                    questions[questions.indexOf(q)] = question
+                    return
+                }
+            }
         }
     }
 
