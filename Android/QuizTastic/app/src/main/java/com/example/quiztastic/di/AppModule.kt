@@ -27,17 +27,17 @@ object AppModule {
         ).build()
     }
 
-//    @Provides
-//    @Singleton
-//    fun provideQuestionRepository(db: QuestionDatabase): QuestionRepository {
-//        return QuestionRepositoryImpl(db.questionDao)
-//    }
-
     @Provides
     @Singleton
-    fun provideQuestionRepository(): QuestionRepository {
-        return QuestionRepositoryFakeImpl()
+    fun provideQuestionRepository(db: QuestionDatabase): QuestionRepository {
+        return QuestionRepositoryImpl(db.questionDao)
     }
+
+//    @Provides
+//    @Singleton
+//    fun provideQuestionRepository(): QuestionRepository {
+//        return QuestionRepositoryFakeImpl()
+//    }
 
     @Provides
     @Singleton

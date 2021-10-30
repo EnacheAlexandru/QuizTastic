@@ -7,25 +7,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.quiztastic.feature_question.presentation.add_edit_question.AddEditQuestionViewModel
 import com.example.quiztastic.feature_question.presentation.questions.QuestionsEvent
+import com.example.quiztastic.feature_question.presentation.questions.QuestionsState
 import com.example.quiztastic.feature_question.presentation.questions.QuestionsViewModel
 import com.example.quiztastic.feature_question.presentation.util.Screen
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun QuestionsScreen(
     navController: NavController,
     viewModel: QuestionsViewModel = hiltViewModel()
 ) {
-    val state = viewModel.state.value
+    val state: State<QuestionsState> = viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier
@@ -38,7 +37,7 @@ fun QuestionsScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(state.questions) { question ->
+            items(state.value.questions) { question ->
                 QuestionItem(
                     question = question,
                     modifier = Modifier

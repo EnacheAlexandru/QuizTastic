@@ -22,7 +22,7 @@ class QuestionRepositoryFakeImpl(
 ) : QuestionRepository {
 
     override fun getQuestions(): Flow<List<Question>> {
-        return flowOf(questions)
+        return flowOf(Collections.unmodifiableList(questions))
     }
 
     override suspend fun getQuestionById(id: Long): Question? {
