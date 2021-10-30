@@ -5,15 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.quiztastic.feature_question.domain.model.Question
 import com.example.quiztastic.feature_question.presentation.questions.QuestionsEvent
 import com.example.quiztastic.feature_question.presentation.questions.QuestionsState
 import com.example.quiztastic.feature_question.presentation.questions.QuestionsViewModel
@@ -25,6 +28,8 @@ fun QuestionsScreen(
     viewModel: QuestionsViewModel = hiltViewModel()
 ) {
     val state: State<QuestionsState> = viewModel.state.collectAsState()
+    val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
+    val (currentQuestion, setCurrentQuestion) = remember { mutableStateOf(Question(-1L, "", "", "", "", "", "")) }
 
     Column(
         modifier = Modifier
@@ -35,8 +40,14 @@ fun QuestionsScreen(
             text = "All questions",
             style = MaterialTheme.typography.h4
         )
-        Spacer(modifier = Modifier.height(20.dp))
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+
+        Spacer(
+            modifier = Modifier.height(20.dp)
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
             items(state.value.questions) { question ->
                 QuestionItem(
                     question = question,
@@ -51,7 +62,15 @@ fun QuestionsScreen(
                             )
                         },
                     onDeleteClick = {
-                        viewModel.onEvent(QuestionsEvent.DeleteQuestionEvent(question))
+                        setShowDialog(true)
+                        setCurrentQuestion(question)
+                    }
+                )
+                OnDeleteDialog(
+                    showDialog = showDialog,
+                    setShowDialog = setShowDialog,
+                    onConfirm = {
+                        viewModel.onEvent(QuestionsEvent.DeleteQuestionEvent(currentQuestion))
                     }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
