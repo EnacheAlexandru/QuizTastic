@@ -16,6 +16,6 @@ interface QuestionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertQuestion(question: Question)
 
-    @Delete
-    suspend fun deleteQuestion(question: Question)
+    @Query("DELETE FROM Question WHERE id = :id")
+    suspend fun deleteQuestion(id: Long)
 }

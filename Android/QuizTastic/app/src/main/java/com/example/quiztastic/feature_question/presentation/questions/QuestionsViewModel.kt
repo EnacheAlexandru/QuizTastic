@@ -34,7 +34,7 @@ class QuestionsViewModel @Inject constructor(
         when (event) {
             is QuestionsEvent.DeleteQuestionEvent -> {
                 viewModelScope.launch {
-                    questionUseCases.deleteQuestionUseCase(event.question)
+                    questionUseCases.deleteQuestionUseCase(event.id)
                 }
             }
         }

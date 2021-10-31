@@ -29,7 +29,7 @@ fun QuestionsScreen(
 ) {
     val state: State<QuestionsState> = viewModel.state.collectAsState()
     val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
-    val (currentQuestion, setCurrentQuestion) = remember { mutableStateOf(Question(-1L, "", "", "", "", "", "")) }
+    val (currentQuestionId, setCurrentQuestionId) = remember { mutableStateOf(-1L) }
 
     Column(
         modifier = Modifier
@@ -63,14 +63,14 @@ fun QuestionsScreen(
                         },
                     onDeleteClick = {
                         setShowDialog(true)
-                        setCurrentQuestion(question)
+                        question.id?.let { setCurrentQuestionId(it) }
                     }
                 )
                 OnDeleteDialog(
                     showDialog = showDialog,
                     setShowDialog = setShowDialog,
                     onConfirm = {
-                        viewModel.onEvent(QuestionsEvent.DeleteQuestionEvent(currentQuestion))
+                        viewModel.onEvent(QuestionsEvent.DeleteQuestionEvent(currentQuestionId))
                     }
                 )
                 Spacer(modifier = Modifier.height(16.dp))

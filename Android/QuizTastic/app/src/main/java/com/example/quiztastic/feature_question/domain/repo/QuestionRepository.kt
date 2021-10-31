@@ -11,5 +11,5 @@ interface QuestionRepository {
 
     suspend fun insertQuestion(question: Question)
 
-    suspend fun deleteQuestion(question: Question)
+    suspend fun deleteQuestion(id: Long)
 }

@@ -21,7 +21,7 @@ class QuestionRepositoryImpl(
         dao.insertQuestion(question)
     }
 
-    override suspend fun deleteQuestion(question: Question) {
-        dao.deleteQuestion(question)
+    override suspend fun deleteQuestion(id: Long) {
+        dao.deleteQuestion(id)
     }
 }

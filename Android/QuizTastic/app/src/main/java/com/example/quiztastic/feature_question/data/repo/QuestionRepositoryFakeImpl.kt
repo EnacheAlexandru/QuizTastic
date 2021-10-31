@@ -57,7 +57,7 @@ class QuestionRepositoryFakeImpl(
         }
     }
 
-    override suspend fun deleteQuestion(question: Question) {
-        questions.removeIf { it.id == question.id }
+    override suspend fun deleteQuestion(id: Long) {
+        questions.removeIf { it.id == id }
     }
 }
