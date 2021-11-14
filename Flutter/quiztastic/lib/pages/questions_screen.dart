@@ -17,14 +17,18 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('All Questions'), elevation: 0),
+        appBar: AppBar(
+            title: const Text('All Questions'),
+            centerTitle: true,
+            elevation: 0),
         body: ListView.builder(
             itemCount: questions.length,
             itemBuilder: (context, index) {
               return QuestionCard(
                   question: questions[index],
                   onEdit: () async {
-                    await Navigator.pushNamed(context, '/add-edit', arguments: questions[index]);
+                    await Navigator.pushNamed(context, '/add-edit',
+                        arguments: questions[index]);
                     setState(() {});
                   },
                   onDelete: () => showDialog(
@@ -49,6 +53,12 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
                                     child: const Text("Yes")),
                               ])));
             }),
-        backgroundColor: Colors.blue[100]);
+        backgroundColor: Colors.blue[100],
+        floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/add-edit');
+              setState(() {});
+            },
+            child: const Icon(Icons.add)));
   }
 }

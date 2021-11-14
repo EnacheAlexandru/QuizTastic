@@ -29,13 +29,6 @@ class _AddEditScreenState extends State<AddEditScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
-  void initState() {
-    super.initState();
-
-
-  }
-
-  @override
   Widget build(BuildContext context) {
     question = ModalRoute.of(context)!.settings.arguments as Question?;
 
@@ -160,7 +153,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                 const SizedBox(height: 40),
                 TextButton(
                     style: TextButton.styleFrom(
-                        textStyle: const TextStyle(fontSize: 50),
+                        textStyle: const TextStyle(fontSize: 40),
                         primary: Colors.white,
                         backgroundColor: Colors.lightGreen),
                     onPressed: () {
@@ -188,7 +181,9 @@ class _AddEditScreenState extends State<AddEditScreen> {
                                 _controllerWrongAnswerThree.text;
                             question!.category = _categoryValue;
                           }
-                          locator.get<QuestionService>().addOrUpdateQuestion(question!);
+                          locator
+                              .get<QuestionService>()
+                              .addOrUpdateQuestion(question!);
                           Navigator.pop(context);
                         }
                       });
