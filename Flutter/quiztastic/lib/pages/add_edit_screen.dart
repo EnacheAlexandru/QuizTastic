@@ -1,8 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:quiztastic/di/injection_container.dart';
-import 'package:quiztastic/domain/question_obj.dart';
-import 'package:quiztastic/service/question_srv.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:moor_flutter/moor_flutter.dart' hide Column;
+import 'package:provider/provider.dart';
+import 'package:quiztastic/repo/db/moor_database.dart';
 
 class AddEditScreen extends StatefulWidget {
   const AddEditScreen({Key? key}) : super(key: key);
@@ -156,37 +156,46 @@ class _AddEditScreenState extends State<AddEditScreen> {
                         textStyle: const TextStyle(fontSize: 40),
                         primary: Colors.white,
                         backgroundColor: Colors.lightGreen),
-                    onPressed: () {
-                      setState(() {
-                        if (_formKey.currentState!.validate()) {
-                          if (question == null) {
-                            question = Question(
-                                null,
-                                _controllerQuestionText.text,
-                                _controllerCorrectAnswer.text,
-                                _controllerWrongAnswerOne.text,
-                                _controllerWrongAnswerTwo.text,
-                                _controllerWrongAnswerThree.text,
-                                _categoryValue);
-                          } else {
-                            question!.questionText =
-                                _controllerQuestionText.text;
-                            question!.correctAnswer =
-                                _controllerCorrectAnswer.text;
-                            question!.wrongAnswerOne =
-                                _controllerWrongAnswerOne.text;
-                            question!.wrongAnswerTwo =
-                                _controllerWrongAnswerTwo.text;
-                            question!.wrongAnswerThree =
-                                _controllerWrongAnswerThree.text;
-                            question!.category = _categoryValue;
-                          }
-                          locator
-                              .get<QuestionService>()
-                              .addOrUpdateQuestion(question!);
-                          Navigator.pop(context);
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        final db =
+                            Provider.of<MoorDatabase>(context, listen: false);
+                        if (question == null) {
+                          final questionToAdd = QuestionsCompanion(
+                              questionText: Value(_controllerQuestionText.text),
+                              correctAnswer:
+                                  Value(_controllerCorrectAnswer.text),
+                              wrongAnswerOne:
+                                  Value(_controllerWrongAnswerOne.text),
+                              wrongAnswerTwo:
+                                  Value(_controllerWrongAnswerTwo.text),
+                              wrongAnswerThree:
+                                  Value(_controllerWrongAnswerThree.text),
+                              category: Value(_categoryValue));
+
+                          await db
+                              .insertQuestion(questionToAdd)
+                              .catchError((_) {
+                            Fluttertoast.showToast(
+                                msg: 'Error while trying adding...');
+                          });
+                        } else {
+                          final questionToUpdate = Question(
+                              id: question!.id,
+                              questionText: _controllerQuestionText.text,
+                              correctAnswer: _controllerCorrectAnswer.text,
+                              wrongAnswerOne: _controllerWrongAnswerOne.text,
+                              wrongAnswerTwo: _controllerWrongAnswerTwo.text,
+                              wrongAnswerThree:
+                                  _controllerWrongAnswerThree.text,
+                              category: _categoryValue);
+
+                          await db.updateQuestion(questionToUpdate).catchError(
+                              (_) => Fluttertoast.showToast(
+                                  msg: 'Error while trying updating...'));
                         }
-                      });
+                        Navigator.pop(context);
+                      }
                     },
                     child: const Text("Save"))
               ]),

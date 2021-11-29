@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:quiztastic/domain/question_obj.dart';
+import 'package:quiztastic/repo/db/moor_database.dart';
 
 class QuestionCard extends StatelessWidget {
   final Question question;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-
-  const QuestionCard({required this.question, required this.onEdit, required this.onDelete});
+  const QuestionCard({Key? key, required this.question, required this.onEdit, required this.onDelete}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
