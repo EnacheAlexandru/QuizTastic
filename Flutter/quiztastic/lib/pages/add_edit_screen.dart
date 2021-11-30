@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:logging/logging.dart';
 import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import 'package:provider/provider.dart';
 import 'package:quiztastic/repo/db/moor_database.dart';
@@ -12,6 +13,7 @@ class AddEditScreen extends StatefulWidget {
 }
 
 class _AddEditScreenState extends State<AddEditScreen> {
+  static final _log = Logger('AddEditScreen');
   Question? question;
   String _categoryValue = categories[0];
   bool _isInit = false;
@@ -152,8 +154,10 @@ class _AddEditScreenState extends State<AddEditScreen> {
 
                           try {
                             await db.insertQuestion(questionToAdd);
+                            _log.severe('Success on add.');
                             Navigator.pop(context);
                           } catch (e) {
+                            _log.severe('Error on add.');
                             Fluttertoast.showToast(msg: 'Error while trying adding...');
                           }
                         } else {
@@ -168,8 +172,10 @@ class _AddEditScreenState extends State<AddEditScreen> {
 
                           try {
                             await db.updateQuestion(questionToUpdate);
+                            _log.severe('Success on update.');
                             Navigator.pop(context);
                           } catch (e) {
+                            _log.severe('Error on update.');
                             Fluttertoast.showToast(msg: 'Error while trying updating...');
                           }
                         }

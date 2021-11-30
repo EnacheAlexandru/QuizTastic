@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'package:quiztastic/components/question_card.dart';
 import 'package:quiztastic/repo/db/moor_database.dart';
@@ -12,6 +13,8 @@ class QuestionsListScreen extends StatefulWidget {
 }
 
 class _QuestionsListScreenState extends State<QuestionsListScreen> {
+  static final _log = Logger('QuestionsListScreen');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,9 +50,11 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
                                   TextButton(
                                       onPressed: () async {
                                         try {
+                                          _log.fine('Success on delete.');
                                           await db.deleteQuestionById(questions[index].id);
                                           Navigator.pop(context);
                                         } catch (e) {
+                                          _log.severe('Error on delete.');
                                           Fluttertoast.showToast(msg: 'Error while trying deleting...');
                                         }
                                       },
