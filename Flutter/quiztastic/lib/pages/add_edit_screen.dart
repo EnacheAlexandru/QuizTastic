@@ -144,7 +144,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                         final db = Provider.of<MoorDatabase>(context, listen: false);
                         if (question == null) {
                           final questionToAdd = QuestionsCompanion(
-                              id: const Value(4), // add this for error
+                              // id: const Value(4), // add this for error
                               questionText: Value(_controllerQuestionText.text),
                               correctAnswer: Value(_controllerCorrectAnswer.text),
                               wrongAnswerOne: Value(_controllerWrongAnswerOne.text),
