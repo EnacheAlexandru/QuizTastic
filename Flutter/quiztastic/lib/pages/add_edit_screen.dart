@@ -17,14 +17,10 @@ class _AddEditScreenState extends State<AddEditScreen> {
   bool _isInit = false;
 
   final TextEditingController _controllerQuestionText = TextEditingController();
-  final TextEditingController _controllerCorrectAnswer =
-      TextEditingController();
-  final TextEditingController _controllerWrongAnswerOne =
-      TextEditingController();
-  final TextEditingController _controllerWrongAnswerTwo =
-      TextEditingController();
-  final TextEditingController _controllerWrongAnswerThree =
-      TextEditingController();
+  final TextEditingController _controllerCorrectAnswer = TextEditingController();
+  final TextEditingController _controllerWrongAnswerOne = TextEditingController();
+  final TextEditingController _controllerWrongAnswerTwo = TextEditingController();
+  final TextEditingController _controllerWrongAnswerThree = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -46,17 +42,13 @@ class _AddEditScreenState extends State<AddEditScreen> {
 
     return Scaffold(
         backgroundColor: Colors.blue[100],
-        appBar: AppBar(
-            title: const Text('Add/Edit Question'),
-            centerTitle: true,
-            elevation: 0),
+        appBar: AppBar(title: const Text('Add/Edit Question'), centerTitle: true, elevation: 0),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
-              child:
-                  Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+              child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _controllerQuestionText,
@@ -68,9 +60,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     }
                   },
                   decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Question',
-                      labelStyle: TextStyle(fontSize: 20)),
+                      border: OutlineInputBorder(), labelText: 'Question', labelStyle: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -83,9 +73,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     }
                   },
                   decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Correct Answer',
-                      labelStyle: TextStyle(fontSize: 20)),
+                      border: OutlineInputBorder(), labelText: 'Correct Answer', labelStyle: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -98,9 +86,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     }
                   },
                   decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Wrong Answer 1',
-                      labelStyle: TextStyle(fontSize: 20)),
+                      border: OutlineInputBorder(), labelText: 'Wrong Answer 1', labelStyle: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -113,9 +99,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     }
                   },
                   decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Wrong Answer 2',
-                      labelStyle: TextStyle(fontSize: 20)),
+                      border: OutlineInputBorder(), labelText: 'Wrong Answer 2', labelStyle: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -128,9 +112,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     }
                   },
                   decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Wrong Answer 3',
-                      labelStyle: TextStyle(fontSize: 20)),
+                      border: OutlineInputBorder(), labelText: 'Wrong Answer 3', labelStyle: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(height: 20),
                 const Text('Category', style: TextStyle(fontSize: 20)),
@@ -142,8 +124,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                       _categoryValue = newValue!;
                     });
                   },
-                  items:
-                      categories.map<DropdownMenuItem<String>>((String value) {
+                  items: categories.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -158,27 +139,23 @@ class _AddEditScreenState extends State<AddEditScreen> {
                         backgroundColor: Colors.lightGreen),
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        final db =
-                            Provider.of<MoorDatabase>(context, listen: false);
+                        final db = Provider.of<MoorDatabase>(context, listen: false);
                         if (question == null) {
                           final questionToAdd = QuestionsCompanion(
+                              id: const Value(4), // add this for error
                               questionText: Value(_controllerQuestionText.text),
-                              correctAnswer:
-                                  Value(_controllerCorrectAnswer.text),
-                              wrongAnswerOne:
-                                  Value(_controllerWrongAnswerOne.text),
-                              wrongAnswerTwo:
-                                  Value(_controllerWrongAnswerTwo.text),
-                              wrongAnswerThree:
-                                  Value(_controllerWrongAnswerThree.text),
+                              correctAnswer: Value(_controllerCorrectAnswer.text),
+                              wrongAnswerOne: Value(_controllerWrongAnswerOne.text),
+                              wrongAnswerTwo: Value(_controllerWrongAnswerTwo.text),
+                              wrongAnswerThree: Value(_controllerWrongAnswerThree.text),
                               category: Value(_categoryValue));
 
-                          await db
-                              .insertQuestion(questionToAdd)
-                              .catchError((_) {
-                            Fluttertoast.showToast(
-                                msg: 'Error while trying adding...');
-                          });
+                          try {
+                            await db.insertQuestion(questionToAdd);
+                            Navigator.pop(context);
+                          } catch (e) {
+                            Fluttertoast.showToast(msg: 'Error while trying adding...');
+                          }
                         } else {
                           final questionToUpdate = Question(
                               id: question!.id,
@@ -186,15 +163,16 @@ class _AddEditScreenState extends State<AddEditScreen> {
                               correctAnswer: _controllerCorrectAnswer.text,
                               wrongAnswerOne: _controllerWrongAnswerOne.text,
                               wrongAnswerTwo: _controllerWrongAnswerTwo.text,
-                              wrongAnswerThree:
-                                  _controllerWrongAnswerThree.text,
+                              wrongAnswerThree: _controllerWrongAnswerThree.text,
                               category: _categoryValue);
 
-                          await db.updateQuestion(questionToUpdate).catchError(
-                              (_) => Fluttertoast.showToast(
-                                  msg: 'Error while trying updating...'));
+                          try {
+                            await db.updateQuestion(questionToUpdate);
+                            Navigator.pop(context);
+                          } catch (e) {
+                            Fluttertoast.showToast(msg: 'Error while trying updating...');
+                          }
                         }
-                        Navigator.pop(context);
                       }
                     },
                     child: const Text("Save"))

@@ -6,7 +6,8 @@ class QuestionCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const QuestionCard({Key? key, required this.question, required this.onEdit, required this.onDelete}) : super(key: key);
+  const QuestionCard({Key? key, required this.question, required this.onEdit, required this.onDelete})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +44,7 @@ class QuestionCard extends StatelessWidget {
                 'Category: ${question.category}',
                 style: const TextStyle(fontSize: 15),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 TextButton.icon(
                   label: const Text('EDIT'),
                   icon: const Icon(Icons.edit),

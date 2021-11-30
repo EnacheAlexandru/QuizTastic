@@ -22,9 +22,7 @@ List<String> categories = ['History', 'Geography', 'Math'];
 
 @UseMoor(tables: [Questions])
 class MoorDatabase extends _$MoorDatabase {
-  MoorDatabase()
-      : super((FlutterQueryExecutor.inDatabaseFolder(
-            path: 'moor_quiztastic.db', logStatements: true)));
+  MoorDatabase() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'moor_quiztastic.db', logStatements: true));
 
   @override
   int get schemaVersion => 1;
@@ -36,12 +34,9 @@ class MoorDatabase extends _$MoorDatabase {
   Future<Question> getQuestionById(int id) async =>
       await (select(questions)..where((q) => q.id.equals(id))).getSingle();
 
-  Future insertQuestion(Insertable<Question> question) async =>
-      await into(questions).insert(question);
+  Future insertQuestion(Insertable<Question> question) async => await into(questions).insert(question);
 
-  Future updateQuestion(Question question) async =>
-      await update(questions).replace(question);
+  Future updateQuestion(Question question) async => await update(questions).replace(question);
 
-  Future deleteQuestionById(int id) async =>
-      await (delete(questions)..where((q) => q.id.equals(id))).go();
+  Future deleteQuestionById(int id) async => await (delete(questions)..where((q) => q.id.equals(id))).go();
 }

@@ -15,15 +15,11 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: const Text('All Questions'),
-            centerTitle: true,
-            elevation: 0),
+        appBar: AppBar(title: const Text('All Questions'), centerTitle: true, elevation: 0),
         body: _buildQuestionList(context),
         backgroundColor: Colors.blue[100],
         floatingActionButton: FloatingActionButton(
-            onPressed: () => Navigator.pushNamed(context, '/add-edit'),
-            child: const Icon(Icons.add)));
+            onPressed: () => Navigator.pushNamed(context, '/add-edit'), child: const Icon(Icons.add)));
   }
 
   StreamBuilder<List<Question>> _buildQuestionList(BuildContext context) {
@@ -40,29 +36,22 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
               itemBuilder: (context, index) {
                 return QuestionCard(
                     question: questions[index],
-                    onEdit: () => Navigator.pushNamed(context, '/add-edit',
-                        arguments: questions[index]),
+                    onEdit: () => Navigator.pushNamed(context, '/add-edit', arguments: questions[index]),
                     onDelete: () => showDialog(
                         context: context,
                         builder: (BuildContext context) => AlertDialog(
                                 title: const Text("Confirm"),
-                                content: const Text(
-                                    "Are you sure you want to delete this question?"),
+                                content: const Text("Are you sure you want to delete this question?"),
                                 actions: [
-                                  TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text("No")),
+                                  TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
                                   TextButton(
                                       onPressed: () async {
-                                        await db
-                                            .deleteQuestionById(
-                                                questions[index].id)
-                                            .catchError((_) =>
-                                                Fluttertoast.showToast(
-                                                    msg:
-                                                        'Error while trying deleting...'));
-
-                                        Navigator.pop(context);
+                                        try {
+                                          await db.deleteQuestionById(questions[index].id);
+                                          Navigator.pop(context);
+                                        } catch (e) {
+                                          Fluttertoast.showToast(msg: 'Error while trying deleting...');
+                                        }
                                       },
                                       child: const Text("Yes")),
                                 ])));
