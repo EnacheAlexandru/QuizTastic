@@ -1,9 +1,11 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import 'package:provider/provider.dart';
 import 'package:quiztastic/repo/db/moor_database.dart';
+import 'package:quiztastic/srv/question_srv.dart';
 
 class AddEditScreen extends StatefulWidget {
   const AddEditScreen({Key? key}) : super(key: key);
@@ -17,6 +19,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
   Question? question;
   String _categoryValue = categories[0];
   bool _isInit = false;
+  bool isLoading = false;
 
   final TextEditingController _controllerQuestionText = TextEditingController();
   final TextEditingController _controllerCorrectAnswer = TextEditingController();
@@ -133,18 +136,19 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 10),
+                (isLoading == true ? const SizedBox(child: CircularProgressIndicator()) : const SizedBox.shrink()),
+                const SizedBox(height: 20),
                 TextButton(
                     style: TextButton.styleFrom(
                         textStyle: const TextStyle(fontSize: 40),
                         primary: Colors.white,
-                        backgroundColor: Colors.lightGreen),
+                        backgroundColor: Colors.lightBlueAccent),
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        final db = Provider.of<MoorDatabase>(context, listen: false);
+                        final srv = Provider.of<QuestionService>(context, listen: false);
                         if (question == null) {
                           final questionToAdd = QuestionsCompanion(
-                              // id: const Value(4), // add this for error
                               questionText: Value(_controllerQuestionText.text),
                               correctAnswer: Value(_controllerCorrectAnswer.text),
                               wrongAnswerOne: Value(_controllerWrongAnswerOne.text),
@@ -152,15 +156,37 @@ class _AddEditScreenState extends State<AddEditScreen> {
                               wrongAnswerThree: Value(_controllerWrongAnswerThree.text),
                               category: Value(_categoryValue));
 
+                          setState(() {
+                            isLoading = true;
+                          });
                           try {
-                            await db.insertQuestion(questionToAdd);
-                            _log.severe('Success on add.');
+                            _log.fine('Add started...');
+                            await Future.delayed(const Duration(seconds: 2));
+                            if (await Connectivity().checkConnectivity() == ConnectivityResult.none) {
+                              srv.addOfflineQuestion(questionToAdd);
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Fluttertoast.showToast(msg: 'Offline... Added locally.');
+                              return;
+                            }
+                            await srv.insertQuestion(questionToAdd);
+                            _log.fine('Success on add.');
+                            setState(() {
+                              isLoading = false;
+                            });
                             Navigator.pop(context);
                           } catch (e) {
                             _log.severe('Error on add.');
+                            setState(() {
+                              isLoading = false;
+                            });
                             Fluttertoast.showToast(msg: 'Error while trying adding...');
                           }
                         } else {
+                          setState(() {
+                            isLoading = true;
+                          });
                           final questionToUpdate = Question(
                               id: question!.id,
                               questionText: _controllerQuestionText.text,
@@ -171,17 +197,33 @@ class _AddEditScreenState extends State<AddEditScreen> {
                               category: _categoryValue);
 
                           try {
-                            await db.updateQuestion(questionToUpdate);
-                            _log.severe('Success on update.');
+                            _log.fine('Update started...');
+                            await Future.delayed(const Duration(seconds: 2));
+                            if (await Connectivity().checkConnectivity() == ConnectivityResult.none) {
+                              _log.severe('Error on update. No internet.');
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Fluttertoast.showToast(msg: 'Offline...');
+                              return;
+                            }
+                            await srv.updateQuestion(questionToUpdate);
+                            _log.fine('Success on update.');
+                            setState(() {
+                              isLoading = false;
+                            });
                             Navigator.pop(context);
                           } catch (e) {
                             _log.severe('Error on update.');
+                            setState(() {
+                              isLoading = false;
+                            });
                             Fluttertoast.showToast(msg: 'Error while trying updating...');
                           }
                         }
                       }
                     },
-                    child: const Text("Save"))
+                    child: const Text("Save")),
               ]),
             ),
           ),

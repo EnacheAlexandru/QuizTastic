@@ -2,6 +2,9 @@ import 'package:moor_flutter/moor_flutter.dart';
 
 part 'moor_database.g.dart';
 
+// flutter packages pub run build_runner watch
+// flutter packages pub run build_runner build
+
 class Questions extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -39,4 +42,6 @@ class MoorDatabase extends _$MoorDatabase {
   Future updateQuestion(Question question) async => await update(questions).replace(question);
 
   Future deleteQuestionById(int id) async => await (delete(questions)..where((q) => q.id.equals(id))).go();
+
+  Future deleteAllQuestions() async => await delete(questions).go();
 }
