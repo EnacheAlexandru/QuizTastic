@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from question import Question, UpdateQuestion
 from question_repo import QuestionRepository
@@ -6,6 +7,38 @@ from question_repo import QuestionRepository
 app = FastAPI()
 
 repo = QuestionRepository()
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, payload):
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(payload)
+            except WebSocketDisconnect:
+                manager.disconnect(connection)
+
+
+manager = ConnectionManager()
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_json()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 @app.get('/questions')
@@ -29,19 +62,20 @@ def getQuestionById(qid: int) -> Question:
 
 
 @app.post('/questions')
-def addQuestion(question: Question) -> Question:
+async def addQuestion(question: Question) -> Question:
     print(f'addQuestion() STARTED...')
     question = repo.addQuestion(question)
     if question is None:
         print(f'addQuestion() FAILED...')
         raise HTTPException(status_code=400, detail='Invalid question!')
 
+    await manager.broadcast({'type': 'add-question', 'payload': question.json()})
     print(f'addQuestion() SUCCEEDED...')
     return question
 
 
 @app.put('/questions')
-def updateQuestion(question: UpdateQuestion) -> Question:
+async def updateQuestion(question: UpdateQuestion) -> Question:
     try:
         print(f'updateQuestion() STARTED...')
         question = repo.updateQuestion(question)
@@ -53,16 +87,18 @@ def updateQuestion(question: UpdateQuestion) -> Question:
         print(f'updateQuestion() FAILED...')
         raise HTTPException(status_code=404, detail='No question with given ID!')
 
+    await manager.broadcast({'type': 'update-question', 'payload': question.json()})
     print(f'updateQuestion() SUCCEEDED...')
     return question
 
 
 @app.delete('/questions/{qid}')
-def deleteQuestion(qid: int) -> bool:
+async def deleteQuestion(qid: int) -> bool:
     print(f'deleteQuestion() STARTED...')
     if repo.deleteQuestion(qid) is False:
         print(f'deleteQuestion() FAILED...')
         raise HTTPException(status_code=404, detail='No question with given ID!')
 
+    await manager.broadcast({'type': 'delete-question', 'payload': qid})
     print(f'deleteQuestion() SUCCEEDED...')
     return True

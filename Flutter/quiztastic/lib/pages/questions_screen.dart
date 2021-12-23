@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:quiztastic/components/question_card.dart';
 import 'package:quiztastic/repo/db/moor_database.dart';
 import 'package:quiztastic/srv/question_srv.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class QuestionsListScreen extends StatefulWidget {
   const QuestionsListScreen({Key? key}) : super(key: key);
@@ -18,9 +20,13 @@ class QuestionsListScreen extends StatefulWidget {
 }
 
 class _QuestionsListScreenState extends State<QuestionsListScreen> {
+  static final _log = Logger('QuestionsListScreen');
+
   final Connectivity _connectivity = Connectivity();
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+
+  WebSocketChannel _channel = WebSocketChannel.connect(Uri.parse('ws://10.0.2.2:8000/ws'));
 
   @override
   void initState() {
@@ -32,7 +38,6 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
         _connectionStatus = result;
       });
     });
-
   }
 
   Future initConnectivity() async {
@@ -57,17 +62,35 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
   }
 
   Future populateLocalStorage(QuestionService srv) async {
-    if (_connectionStatus != ConnectivityResult.none) {
-      srv.populateLocalStorage();
-      for (QuestionsCompanion offlineQuestion in srv.getQuestionAddedOffline()) {
-        await srv.insertQuestion(offlineQuestion);
-      }
-      srv.clearQuestionAddedOffline();
+    for (QuestionsCompanion offlineQuestion in srv.getQuestionAddedOffline()) {
+      await srv.insertQuestion(offlineQuestion);
     }
+    srv.clearQuestionAddedOffline();
+    await srv.populateLocalStorage();
   }
 
   @override
   Widget build(BuildContext context) {
+    final srv = Provider.of<QuestionService>(context);
+
+    if (_connectionStatus != ConnectivityResult.none) {
+      _channel = WebSocketChannel.connect(Uri.parse('ws://10.0.2.2:8000/ws'));
+      _channel.stream.listen((response) {
+        try {
+          Map data = jsonDecode(response);
+          if (data['type'] == 'add-question') {
+            srv.insertQuestionBroadcast(jsonDecode(data['payload']));
+          } else if (data['type'] == 'update-question') {
+            srv.updateQuestionBroadcast(Question.fromJson(jsonDecode(data['payload'])));
+          } else if (data['type'] == 'delete-question') {
+            srv.deleteQuestionByIdBroadcast(data['payload']);
+          }
+        } catch (e) {
+          print('Some error!');
+        }
+      });
+    }
+
     return Scaffold(
         appBar: AppBar(title: const Text('All Questions'), centerTitle: true, elevation: 0),
         body: _buildQuestionList(context),
@@ -79,7 +102,17 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
   StreamBuilder<List<Question>> _buildQuestionList(BuildContext context) {
     final srv = Provider.of<QuestionService>(context);
 
-    populateLocalStorage(srv);
+    try {
+      _log.fine('Getting questions started...');
+      if (_connectionStatus != ConnectivityResult.none) {
+        populateLocalStorage(srv);
+      }
+      _log.fine('Success on getting questions.');
+    } catch (e) {
+      _log.severe('Error on getting questions. No internet.');
+      Fluttertoast.showToast(msg: 'Error while trying getting questions... Offline.');
+    }
+
 
     return StreamBuilder(
         stream: srv.watchAllQuestions(),
@@ -103,10 +136,10 @@ class _QuestionsListScreenState extends State<QuestionsListScreen> {
 
   @override
   void dispose() {
+    _channel.sink.close();
     _connectivitySubscription.cancel();
     super.dispose();
   }
-
 }
 
 class AlertDialogDelete extends StatefulWidget {

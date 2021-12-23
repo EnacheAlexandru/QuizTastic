@@ -48,10 +48,14 @@ class QuestionService {
     Response response = await delete(Uri.http(domain, "/questions/$qid"));
 
     if (response.statusCode == 200) {
-      db.deleteQuestionById(qid);
+      // db.deleteQuestionById(qid);
     } else {
       throw Exception('');
     }
+  }
+
+  void deleteQuestionByIdBroadcast(int qid) {
+    db.deleteQuestionById(qid);
   }
 
   Future insertQuestion(QuestionsCompanion question) async {
@@ -67,19 +71,31 @@ class QuestionService {
         }));
 
     if (response.statusCode == 200) {
-      Map data = jsonDecode(response.body);
-      final questionToAdd = QuestionsCompanion(
-          id: Value(data["id"]), // add this for error
-          questionText: Value(data["questionText"]),
-          correctAnswer: Value(data["correctAnswer"]),
-          wrongAnswerOne: Value(data["wrongAnswerOne"]),
-          wrongAnswerTwo: Value(data["wrongAnswerTwo"]),
-          wrongAnswerThree: Value(data["wrongAnswerThree"]),
-          category: Value(data["category"]));
-      db.insertQuestion(questionToAdd);
+      // Map data = jsonDecode(response.body);
+      // final questionToAdd = QuestionsCompanion(
+      //     id: Value(data["id"]), // add this for error
+      //     questionText: Value(data["questionText"]),
+      //     correctAnswer: Value(data["correctAnswer"]),
+      //     wrongAnswerOne: Value(data["wrongAnswerOne"]),
+      //     wrongAnswerTwo: Value(data["wrongAnswerTwo"]),
+      //     wrongAnswerThree: Value(data["wrongAnswerThree"]),
+      //     category: Value(data["category"]));
+      // db.insertQuestion(questionToAdd);
     } else {
       throw Exception('');
     }
+  }
+
+  void insertQuestionBroadcast(Map data) {
+    final questionToAdd = QuestionsCompanion(
+        id: Value(data["id"]), // add this for error
+        questionText: Value(data["questionText"]),
+        correctAnswer: Value(data["correctAnswer"]),
+        wrongAnswerOne: Value(data["wrongAnswerOne"]),
+        wrongAnswerTwo: Value(data["wrongAnswerTwo"]),
+        wrongAnswerThree: Value(data["wrongAnswerThree"]),
+        category: Value(data["category"]));
+    db.insertQuestion(questionToAdd);
   }
 
   Future updateQuestion(Question question) async {
@@ -96,9 +112,13 @@ class QuestionService {
         }));
 
     if (response.statusCode == 200) {
-      db.updateQuestion(question);
+      // db.updateQuestion(question);
     } else {
       throw Exception('');
     }
+  }
+
+  void updateQuestionBroadcast(Question question) {
+    db.updateQuestion(question);
   }
 }
